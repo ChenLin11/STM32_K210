@@ -34,7 +34,7 @@ typedef __packed struct
 							//bit1:0,结束播放;1,开启播放 
 }__audiodev; 
 extern __audiodev audiodev;	//音乐播放控制器
-
+extern u8 FLAG_PlayMusic;   //音乐播放标志
 
 void wav_i2s_dma_callback(void);
 

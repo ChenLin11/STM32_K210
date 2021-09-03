@@ -229,7 +229,7 @@ u8 wav_play_song(u8* fname)
 							break; 
 						}
 						wav_get_curtime(audiodev.file,&wavctrl);//得到总时间和当前播放的时间 
-						audio_msg_show(wavctrl.totsec,wavctrl.cursec,wavctrl.bitrate);
+						//audio_msg_show(wavctrl.totsec,wavctrl.cursec,wavctrl.bitrate);
 						t++;
 						if(t==20)
 						{

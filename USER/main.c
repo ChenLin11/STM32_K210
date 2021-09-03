@@ -16,11 +16,8 @@
 #include "text.h"	 
 #include "wm8978.h"	 
 #include "audioplay.h"	
-#include "usbh_usr.h" 
 
-USBH_HOST  USB_Host;
-USB_OTG_CORE_HANDLE  USB_OTG_Core;
-
+extern u8 FLAG_PlayMusic;
 void sendMessage(char* s);//待发送的信息
 void Delay(__IO uint32_t nCount);
 
@@ -29,16 +26,12 @@ void Delay(__IO uint32_t nCount)
   while(nCount--){}
 }
 
-u8 USH_User_App(void){//usb响应函数
-
-	return 0;
-}
 int main(void)
 {
 	u8 key;           //保存键值
 	u8 t;
 	u8 len;	
-	u16 times=0;  
+	u16 times=0;
 	char s1[18] = {"STM32:order1"};//对应四个命令
 	char s2[18] = {"STM32:order2"};
 	char s3[18] = {"STM32:order3"};
@@ -51,7 +44,7 @@ int main(void)
 	KEY_Init();       //初始化按键接口
 	uart_init(115200); //初始化串口
 	LED0=0;	
-
+	FLAG_PlayMusic = 0;//不播放音乐
 
 	usmart_dev.init(84);		//初始化USMART
  	LCD_Init();					//LCD初始化  
@@ -64,6 +57,8 @@ int main(void)
 	my_mem_init(SRAMIN);		//初始化内部内存池 
 	my_mem_init(SRAMCCM);		//初始化CCM内存池 
 	exfuns_init();				//为fatfs相关变量申请内存  
+		f_mount(fs[0],"0:",1); 	//挂载SD卡  
+  	f_mount(fs[1],"1:",1); 	//挂载SD卡  
   	f_mount(fs[2],"2:",1); 	//挂载U盘
 	POINT_COLOR=RED;      
 	while(font_init()) 			//检查字库
@@ -81,25 +76,30 @@ int main(void)
 	Show_Str(60,130,200,16,"KEY0:NEXT   KEY2:PREV",16,0); 
 	Show_Str(60,150,200,16,"KEY_UP:PAUSE/PLAY",16,0);
 	
+	FLAG_PlayMusic = 1;  
 	
-	//初始化USB主机
-  USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  
 	while(1)
 	{ 
-		//该函数必须循环调用,仅在U盘识别阶段,识别后,由USB中断处理其他操作(读写)
-		USBH_Process(&USB_OTG_Core, &USB_Host);
-		delay_ms(1);
-		t++;
-		if(t==100)
-		{
-			LED0=!LED0;
-			t=0;
+		
+		if(FLAG_PlayMusic){//如果播放音乐
+			audio_play();
+			LED1 = 1;
 		}
-		audio_play();
+		else{
+			delay_ms(1);
+			t++;
+			if(t==100)
+			{
+				LED0=!LED0;
+				t=0;
+			}
+		}
+		
+		
 	} 	
 	
 				  	
-	while(1)
+	while(0)
 	{
 		key=KEY_Scan(0);		//得到键值，模式：不支持连续按键
 	  if(key)
