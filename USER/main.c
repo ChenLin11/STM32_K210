@@ -17,6 +17,7 @@
 #include "wm8978.h"	 
 #include "audioplay.h"
 #include "exti.h"
+#include "pwm.h"
 
 extern u8 FLAG_PlayMusic;
 void sendMessage(char* s);//待发送的信息
@@ -30,8 +31,6 @@ void Delay(__IO uint32_t nCount)
 int main(void)
 {
 	u8 key;           //保存键值
-	u8 t;
-	u8 len;	
 	char s1[18] = {"STM32:order1"};//对应四个命令
 	char s2[18] = {"STM32:order2"};
 	char s3[18] = {"STM32:order3"};
@@ -50,6 +49,7 @@ int main(void)
  	LCD_Init();					//LCD初始化  
  	KEY_Init();					//按键初始化 
 	EXTIX_Init();       //初始化外部中断函数	
+	TIM3_PWM_Init(199,7199);//1/(72/(psc+1))*(arr+1)	用于舵机的PWM初始化
 	W25QXX_Init();				//初始化W25Q128
 	WM8978_Init();				//初始化WM8978
 	WM8978_HPvol_Set(40,40);	//耳机音量设置
@@ -70,12 +70,7 @@ int main(void)
 		delay_ms(200);				  
 	}  	 
 	POINT_COLOR=RED;      
- 	Show_Str(60,50,200,16,"Explorer STM32F4开发板",16,0);				    	 
-	Show_Str(60,70,200,16,"音乐播放器实验",16,0);				    	 
-	Show_Str(60,90,200,16,"正点原子@ALIENTEK",16,0);				    	 
-	Show_Str(60,110,200,16,"2014年5月24日",16,0);
-	Show_Str(60,130,200,16,"KEY0:NEXT   KEY2:PREV",16,0); 
-	Show_Str(60,150,200,16,"KEY_UP:PAUSE/PLAY",16,0);
+ 	
 	
 	FLAG_PlayMusic = 1;  
 	
@@ -85,47 +80,34 @@ int main(void)
 		if(FLAG_PlayMusic){//如果播放音乐
 			audio_play();
 		}
-		
-		
-	} 	
-	
-				  	
-	while(0)
-	{
+		TIM_SetCompare1(TIM3,170);//170-195的范围
+		TIM_SetCompare1(TIM3,180);//没+10,舵机转角+90°
 		key=KEY_Scan(0);		//得到键值，模式：不支持连续按键
 	  if(key)
 		{						   
 			switch(key)
 			{				 
 				case WKUP_PRES:	//key_up键
-					//BEEP=!BEEP;
-					LED0 = 0;
-					LED1 = 0;
-//					sendMessage(s1);
-					sendMessage("A");
+					sendMessage("A");//用于添加人脸信息
 					break;
 				case KEY0_PRES:	//key0键
-					LED0=!LED0;
-					sendMessage(s2);
+					sendMessage("C");//用于识别人脸信息
 					break;
 				case KEY1_PRES:	//key1键
-					LED1=!LED1;
-//					sendMessage(s3);
-					sendMessage("C");
+					sendMessage("D");//用于删除人脸信息
 					break;
-				case KEY2_PRES:	//key2键
-					LED0=1;
-					LED1=1;
-					sendMessage(s4);
-					break;
+//				case KEY2_PRES:	//key2键
+//					sendMessage(s4);
+//					break;
 			}
 		}else delay_ms(10); 
-		
-	}//while	
+	} 	
+	
+				  	
 }
 void sendMessage(char *s){//向K210发送响应指令
 	int t;
-	for(t=0;t<18;t++){
+	for(t=0;t<2;t++){
 		USART_SendData(USART1, s[t]);         //向串口1发送数据
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	}

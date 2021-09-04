@@ -170,7 +170,6 @@ void wav_get_curtime(FIL*fx,__wavctrl *wavx)
 u8 wav_play_song(u8* fname)
 {
 
-	u8 t=0; 
 	u8 res;  
 	u32 fillnum; 
 	audiodev.file=(FIL*)mymalloc(SRAMIN,sizeof(FIL));
