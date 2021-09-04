@@ -166,12 +166,10 @@ void wav_get_curtime(FIL*fx,__wavctrl *wavx)
 //播放某个WAV文件
 //fname:wav文件路径.
 //返回值:
-//KEY0_PRES:下一曲
-//KEY1_PRES:上一曲
 //其他:错误
 u8 wav_play_song(u8* fname)
 {
-	u8 key;
+
 	u8 t=0; 
 	u8 res;  
 	u32 fillnum; 
@@ -210,35 +208,12 @@ u8 wav_play_song(u8* fname)
 					wavtransferend=0;
 					if(fillnum!=WAV_I2S_TX_DMA_BUFSIZE)//播放结束?
 					{
-						res=KEY0_PRES;
+						
 						break;
 					} 
  					if(wavwitchbuf)fillnum=wav_buffill(audiodev.i2sbuf2,WAV_I2S_TX_DMA_BUFSIZE,wavctrl.bps);//填充buf2
 					else fillnum=wav_buffill(audiodev.i2sbuf1,WAV_I2S_TX_DMA_BUFSIZE,wavctrl.bps);//填充buf1
-					while(1)
-					{
-						key=KEY_Scan(0); 
-						if(key==WKUP_PRES)//暂停
-						{
-							if(audiodev.status&0X01)audiodev.status&=~(1<<0);
-							else audiodev.status|=0X01;  
-						}
-						if(key==KEY2_PRES||key==KEY0_PRES)//下一曲/上一曲
-						{
-							res=key;
-							break; 
-						}
-						wav_get_curtime(audiodev.file,&wavctrl);//得到总时间和当前播放的时间 
-						//audio_msg_show(wavctrl.totsec,wavctrl.cursec,wavctrl.bitrate);
-						t++;
-						if(t==20)
-						{
-							t=0;
- 							LED0=!LED0;
-						}
-						if((audiodev.status&0X01)==0)delay_ms(10);
-						else break;
-					}
+					
 				}
 				audio_stop(); 
 			}else res=0XFF; 

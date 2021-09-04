@@ -15,7 +15,8 @@
 #include "fontupd.h"
 #include "text.h"	 
 #include "wm8978.h"	 
-#include "audioplay.h"	
+#include "audioplay.h"
+#include "exti.h"
 
 extern u8 FLAG_PlayMusic;
 void sendMessage(char* s);//待发送的信息
@@ -31,7 +32,6 @@ int main(void)
 	u8 key;           //保存键值
 	u8 t;
 	u8 len;	
-	u16 times=0;
 	char s1[18] = {"STM32:order1"};//对应四个命令
 	char s2[18] = {"STM32:order2"};
 	char s3[18] = {"STM32:order3"};
@@ -43,12 +43,13 @@ int main(void)
 	BEEP_Init();      //初始化蜂鸣器接口
 	KEY_Init();       //初始化按键接口
 	uart_init(115200); //初始化串口
-	LED0=0;	
+	LED0=1;	
 	FLAG_PlayMusic = 0;//不播放音乐
 
 	usmart_dev.init(84);		//初始化USMART
  	LCD_Init();					//LCD初始化  
- 	KEY_Init();					//按键初始化  
+ 	KEY_Init();					//按键初始化 
+	EXTIX_Init();       //初始化外部中断函数	
 	W25QXX_Init();				//初始化W25Q128
 	WM8978_Init();				//初始化WM8978
 	WM8978_HPvol_Set(40,40);	//耳机音量设置
@@ -83,16 +84,6 @@ int main(void)
 		
 		if(FLAG_PlayMusic){//如果播放音乐
 			audio_play();
-			LED1 = 1;
-		}
-		else{
-			delay_ms(1);
-			t++;
-			if(t==100)
-			{
-				LED0=!LED0;
-				t=0;
-			}
 		}
 		
 		

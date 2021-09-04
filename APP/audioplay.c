@@ -24,7 +24,10 @@
 //Copyright(C) 广州市星翼电子科技有限公司 2014-2024
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	
-extern u8 FLAG_PlayMusic;
+ 
+//音乐播放标志
+u8 FLAG_PlayMusic;  
+
 USBH_HOST  USB_Host;
 USB_OTG_CORE_HANDLE  USB_OTG_Core;
 
@@ -35,9 +38,6 @@ u8 USH_User_App(void){//usb响应函数
 	u8 *fn;   			//长文件名
 	u8 *pname;			//带路径的文件名
 	u16 totwavnum; 		//音乐文件总数
-	u16 curindex;		//图片当前索引
-	u8 key;				//键值		  
- 	u16 temp;
 	u16 *wavindextbl;	//音乐索引表
 	
 	WM8978_ADDA_Cfg(1,0);	//开启DAC
@@ -77,9 +77,7 @@ u8 USH_User_App(void){//usb响应函数
 	return 0;
 }
 //音乐播放控制器
-__audiodev audiodev;	 
-//音乐播放标志
-u8 FLAG_PlayMusic;  
+__audiodev audiodev;	
 
 //开始音频播放
 void audio_start(void)
@@ -128,7 +126,6 @@ u16 audio_get_tnum(u8 *path)
 //播放音乐
 void audio_play(void)
 {
-	u8 t=0; 
 	
 	//初始化USB主机
   USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  
@@ -137,12 +134,7 @@ void audio_play(void)
 		//该函数必须循环调用,仅在U盘识别阶段,识别后,由USB中断处理其他操作(读写)
 		USBH_Process(&USB_OTG_Core, &USB_Host);
 		delay_ms(1);
-		t++;
-		if(t==100)
-		{
-			LED0=!LED0;
-			t=0;
-		}
+		
  	}
 } 
 //播放某个音频文件
