@@ -332,7 +332,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER,USE_USB_OTG_FS</Define>
               <Undefine></Undefine>
-              <IncludePath>..\CORE;..\FWLIB\inc;..\USER;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\BEEP;..\HARDWARE\KEY;..\HARDWARE\LED;..\HARDWARE\24CXX;..\HARDWARE\I2S;..\HARDWARE\IIC;..\HARDWARE\LCD;..\HARDWARE\SDIO;..\HARDWARE\SPI;..\HARDWARE\SRAM;..\HARDWARE\W25QXX;..\HARDWARE\WM8978;..\HARDWARE\EXTI;..\TEXT;..\FATFS\exfuns;..\FATFS\src;..\MALLOC;..\APP;..\AUDIOCODEC\wav;..\TEXT;..\USMART;..\USB\USB_APP;..\USB\STM32_USB_OTG_Driver\inc;..\USB\STM32_USB_HOST_Library\Core\inc;..\USB\STM32_USB_HOST_Library\Class\MSC\inc</IncludePath>
+              <IncludePath>..\CORE;..\FWLIB\inc;..\USER;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\HARDWARE\BEEP;..\HARDWARE\KEY;..\HARDWARE\LED;..\HARDWARE\24CXX;..\HARDWARE\I2S;..\HARDWARE\IIC;..\HARDWARE\LCD;..\HARDWARE\SDIO;..\HARDWARE\SPI;..\HARDWARE\SRAM;..\HARDWARE\W25QXX;..\HARDWARE\WM8978;..\HARDWARE\EXTI;..\TEXT;..\FATFS\exfuns;..\FATFS\src;..\MALLOC;..\APP;..\AUDIOCODEC\wav;..\TEXT;..\USMART;..\USB\USB_APP;..\USB\STM32_USB_OTG_Driver\inc;..\USB\STM32_USB_HOST_Library\Core\inc;..\USB\STM32_USB_HOST_Library\Class\MSC\inc;..\HARDWARE\PWM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -649,6 +649,11 @@
               <FileName>exti.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\EXTI\exti.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\PWM\pwm.c</FilePath>
             </File>
           </Files>
         </Group>
