@@ -53,11 +53,11 @@ def on_timer(timer):  #回调函数
         print(data)
         check = 1#代表接收到串口数据
         save = 0
-        if data == b'A':
+        if data == b'AA':
             save = 1  #存到SD卡中
-        elif data == b'C':
+        elif data == b'CC':
             recognize = 1
-        elif data == b'D':
+        elif data == b'DD':
             delete = 1  #删除当前人脸信息
         print("data")
         print(data)

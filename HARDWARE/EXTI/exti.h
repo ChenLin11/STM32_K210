@@ -14,7 +14,8 @@
 //All rights reserved									  
 ////////////////////////////////////////////////////////////////////////////////// 	 
 
-
+extern u8 FLAG_Face_True;   //人脸认证成功
+extern u8 FLAG_Face_False;   //人脸认证成失败
 
 void EXTIX_Init(void);	//外部中断初始化		 					    
 #endif

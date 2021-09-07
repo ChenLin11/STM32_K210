@@ -2,6 +2,7 @@
 #include "sys.h"
 #include "delay.h"
 #include "usart.h"
+#include "usart3.h"
 #include "led.h"
 #include "beep.h"
 #include "key.h"  
@@ -20,6 +21,9 @@
 #include "pwm.h"
 
 extern u8 FLAG_PlayMusic;
+extern u8 FLAG_Face_True;
+extern u8 FLAG_Face_False;
+
 void sendMessage(char* s);//待发送的信息
 void Delay(__IO uint32_t nCount);
 
@@ -31,19 +35,18 @@ void Delay(__IO uint32_t nCount)
 int main(void)
 {
 	u8 key;           //保存键值
-	char s1[18] = {"STM32:order1"};//对应四个命令
-	char s2[18] = {"STM32:order2"};
-	char s3[18] = {"STM32:order3"};
-	char s4[18] = {"STM32:order4"};
+
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//设置系统中断优先级分组2
 	
 	delay_init(168);  //初始化延时函数
 	LED_Init();				//初始化LED端口 
 	BEEP_Init();      //初始化蜂鸣器接口
 	KEY_Init();       //初始化按键接口
-	uart_init(115200); //初始化串口
-	LED0=1;	
+	uart_init(115200); //初始化串口1
+	//uart3_init(115200); //初始化串口3
 	FLAG_PlayMusic = 0;//不播放音乐
+	FLAG_Face_True = 0;
+	FLAG_Face_False = 0;
 
 	usmart_dev.init(84);		//初始化USMART
  	LCD_Init();					//LCD初始化  
@@ -76,7 +79,7 @@ int main(void)
 	
 	while(1)
 	{ 
-		
+		LCD_Fill(30,50,240,66,WHITE);//清除显示	 
 		if(FLAG_PlayMusic){//如果播放音乐
 			audio_play();
 		}
@@ -88,16 +91,16 @@ int main(void)
 			switch(key)
 			{				 
 				case WKUP_PRES:	//key_up键
-					sendMessage("A");//用于添加人脸信息
+					sendMessage("AA");//用于添加人脸信息
 					break;
-				case KEY0_PRES:	//key0键
-					sendMessage("C");//用于识别人脸信息
-					break;
+//				case KEY0_PRES:	//key0键
+//					sendMessage("CC");//用于识别人脸信息
+//					break;
 				case KEY1_PRES:	//key1键
-					sendMessage("D");//用于删除人脸信息
+					sendMessage("DD");//用于删除人脸信息
 					break;
 //				case KEY2_PRES:	//key2键
-//					sendMessage(s4);
+//					sendMessage("RR");
 //					break;
 			}
 		}else delay_ms(10); 
@@ -105,10 +108,10 @@ int main(void)
 	
 				  	
 }
-void sendMessage(char *s){//向K210发送响应指令
+void sendMessage(char *s){//向K210发送指令
 	int t;
 	for(t=0;t<2;t++){
-		USART_SendData(USART1, s[t]);         //向串口1发送数据
+		USART_SendData(USART1, s[t]);         //向串口发送数据
 		while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//等待发送结束
 	}
 }

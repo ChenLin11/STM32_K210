@@ -12,6 +12,7 @@
 #include "text.h"
 #include "string.h"  
 #include "usbh_usr.h" 
+#include "exti.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板
@@ -27,6 +28,8 @@
  
 //音乐播放标志
 u8 FLAG_PlayMusic;  
+extern u8 FLAG_Face_True;   //人脸认证成功
+extern u8 FLAG_Face_False;   //人脸认证成失败
 
 USBH_HOST  USB_Host;
 USB_OTG_CORE_HANDLE  USB_OTG_Core;
@@ -60,11 +63,26 @@ u8 USH_User_App(void){//usb响应函数
   res=f_opendir(&wavdir,(const TCHAR*)"2:/MUSIC"); 	//打开目录
 	if(res==FR_OK)//打开成功
 	{	
-		fn = (u8*)"warning.wav";
+		if(FLAG_PlayMusic){//如果要播放音乐，说明识别有了个结果，发送中断
+			FLAG_PlayMusic = 0;
+			LCD_Fill(60,190,240,190+16,WHITE);				//清除之前的显示
+			
+			if(FLAG_Face_True){//认证成功
+				FLAG_Face_True = 0;
+				fn = (u8*)"ring.wav";
+				Show_Str(60,190,240-60,16,"识别成功",16,0);				//显示歌曲名字 
+			}
+			else if(FLAG_Face_False){//认证识别
+				FLAG_Face_False = 0;
+				fn = (u8*)"warning.wav";
+				Show_Str(60,190,240-60,16,"识别失败",16,0);				//显示歌曲名字 
+			}	
+		}
+		
 		strcpy((char*)pname,"2:/MUSIC/");				//复制路径(目录)
 		strcat((char*)pname,(const char*)fn);  			//将文件名接在后面
- 		LCD_Fill(60,190,240,190+16,WHITE);				//清除之前的显示
-		Show_Str(60,190,240-60,16,fn,16,0);				//显示歌曲名字 
+
+		
 
 		
 		audio_play_song(pname); 			 		//播放这个音频文件

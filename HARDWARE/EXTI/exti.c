@@ -19,13 +19,15 @@
 ////////////////////////////////////////////////////////////////////////////////// 
 
 extern u8 FLAG_PlayMusic;
+u8 FLAG_Face_True;   //人脸认证成功
+u8 FLAG_Face_False;   //人脸认证成失败
+
 //外部中断0服务程序
 void EXTI0_IRQHandler(void)//识别成功时,GPIOC.0将接收高电平信号
 {
 	delay_ms(10);	//消抖
-	FLAG_PlayMusic = 0;
-	LED0 = !LED0;
-	//BEEP = 1;
+	FLAG_PlayMusic = 1;
+	FLAG_Face_True = 1;
 	EXTI_ClearITPendingBit(EXTI_Line0); //清除LINE0上的中断标志位 
 }	
 //外部中断1服务程序
@@ -33,8 +35,7 @@ void EXTI1_IRQHandler(void)//识别失败时,GPIOC.1将接收高电平信号
 {
 	delay_ms(10);	//消抖
 	FLAG_PlayMusic = 1;
-	LED1 = !LED1;	 	
-	//BEEP = 1;
+	FLAG_Face_False = 1;
 	EXTI_ClearITPendingBit(EXTI_Line1); //清除LINE1上的中断标志位 
 }	
 //PC0 PC1:GPIO初始化
@@ -50,8 +51,7 @@ void GPIOC_Init(void)
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;//100M
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;//内部下拉
   GPIO_Init(GPIOC, &GPIO_InitStructure);//初始化GPIOC0,1
-	
- 
+
 } 
 
 //外部中断初始化程序
@@ -61,7 +61,7 @@ void EXTIX_Init(void)
 	NVIC_InitTypeDef   NVIC_InitStructure;
 	EXTI_InitTypeDef   EXTI_InitStructure;
 	GPIOC_Init();//对需要使用的C0,C1初始化
- 
+	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);//使能SYSCFG时钟
 	//中断线映射
 	SYSCFG_EXTILineConfig(EXTI_PortSourceGPIOC, EXTI_PinSource0);//PC0 连接到中断线0
@@ -89,7 +89,7 @@ void EXTIX_Init(void)
   NVIC_Init(&NVIC_InitStructure);//配置
 	
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI1_IRQn;//外部中断1
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;//抢占优先级1
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;//抢占优先级0
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;//子优先级2
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;//使能外部中断通道
   NVIC_Init(&NVIC_InitStructure);//配置
