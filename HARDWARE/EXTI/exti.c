@@ -44,7 +44,7 @@ void GPIOC_Init(void)
 	
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);//使能GPIOA,GPIOE时钟
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);//使能GPIOC时钟
  
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1; //PC0 PC1对应引脚
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;//普通输入模式
@@ -55,12 +55,12 @@ void GPIOC_Init(void)
 } 
 
 //外部中断初始化程序
-//初始化PE2~4,PA0为中断输入.
+//PC0~1为中断输入.
 void EXTIX_Init(void)
 {
 	NVIC_InitTypeDef   NVIC_InitStructure;
 	EXTI_InitTypeDef   EXTI_InitStructure;
-	GPIOC_Init();//对需要使用的C0,C1初始化
+	GPIOC_Init();//对需要使用的PC0,PC1初始化
 	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);//使能SYSCFG时钟
 	//中断线映射
@@ -93,8 +93,6 @@ void EXTIX_Init(void)
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x02;//子优先级2
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;//使能外部中断通道
   NVIC_Init(&NVIC_InitStructure);//配置
-
-
 	   
 }
 

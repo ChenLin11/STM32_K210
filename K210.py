@@ -1,7 +1,7 @@
 # Untitled - By: hi - 周日 8月 15 2021
 
 import sensor, image, time, utime
-import sensor,image,lcd  # import 相关库
+import lcd  # import 相关库
 import KPU as kpu
 import os
 from Maix import FPIOA,GPIO
@@ -12,8 +12,8 @@ from machine import Timer
 
 
 
-fm.register(12,fm.fpioa.UART1_TX)#串口引脚映射
-fm.register(11,fm.fpioa.UART1_RX)#这两个引脚是可以任意修改的
+fm.register(12,fm.fpioa.UART1_TX)#IO12---引脚编号10---连接PA10
+fm.register(11,fm.fpioa.UART1_RX)#IO11---引脚编号11---连接PA9
 
 
 com = UART(UART.UART1, 115200, timeout=50, read_buf_len=4096)#构建串口对象
@@ -23,42 +23,36 @@ fm.register(24,fm.fpioa.GPIO1)#引脚24映射为GPIO1  （编号5,连接PC1）
 
 Face_Rec_true = GPIO(GPIO.GPIO0, GPIO.OUT)#用于人脸认证成功
 Face_Rec_false = GPIO(GPIO.GPIO1, GPIO.OUT)#用于人脸认证失败
-#utime.sleep_ms(500)
-#print(Face_Rec_true.value(1))#识别成功,发送GPIO0高电平信号
-#utime.sleep_ms(500)
-#utime.sleep_ms(500)
-#print(Face_Rec_true.value(0))#将引脚重置为低电平,否则下次不触发
 
-#utime.sleep_ms(500)
-#print(Face_Rec_false.value(1))#识别失败,发送GPIO1高电平信号
-#utime.sleep_ms(500)
-#print(Face_Rec_false.value(0))#将引脚重置为低电平,否则下次不触发
 
 #定时器中断回调函数
 tem = ''
 b = []
 check = 0  #存储
-save = 0   #临时存储
+save = 0   #存储人脸
 switch = 0 #切换
 delete = 0 #删除人脸
-recognize = 0 #识别人脸
+
 def on_timer(timer):  #回调函数
     global check
     global save
     global delete
-    global recognize
     data = []
-    data = com.read(2) #读取串口数据
+    data = com.read() #读取串口数据
     if data!=None:
-        print(data)
         check = 1#代表接收到串口数据
-        save = 0
-        if data == b'AA':
+        if data == b'AAA':
             save = 1  #存到SD卡中
-        elif data == b'CC':
-            recognize = 1
+            delete = 0
+        elif data == b'AA':#有时会少传输一个字符,AAA会接收成AA
+            save = 1
+            delete = 0
         elif data == b'DD':
             delete = 1  #删除当前人脸信息
+            save = 0
+        elif data == b'DDD':
+            delete = 1
+            save = 0
         print("data")
         print(data)
 #定时器中断初始化
@@ -80,20 +74,47 @@ def save_feature(feat):
         record =ubinascii.b2a_base64(feat)
         f.write(record)
 
+def delete_feature(index):#删除人脸：删除当前人脸，再重新写入到文件
+    print("delete")
+    record_ftrs.remove(record_ftrs[index]) #删除index对应的人脸obj
+    with open('/sd/features.txt','wb') as f:
+        for record_face in record_ftrs:
+            f.write(record)
+    print(record_ftrs)
+
+def face_rec_success():
+    #utime.sleep_ms(500)
+    #Face_Rec_true.value(0)#将引脚重置为低电平,否则下次不触发
+    utime.sleep_ms(500)
+    Face_Rec_true.value(1)#识别成功,发送GPIO0高电平信号
+    utime.sleep_ms(500)
+    Face_Rec_true.value(0)#将引脚重置为低电平,否则下次不触发
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+
+def face_rec_fail():
+    utime.sleep_ms(500)
+    Face_Rec_false.value(1)#识别失败,发送GPIO1高电平信号
+    utime.sleep_ms(500)
+    Face_Rec_false.value(0)#将引脚重置为低电平,否则下次不触发
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+
+
 st = ''
 if(feature_file_exists):#如果存在人脸特征信息
-    print("start")
     with open('/sd/features.txt','rb') as f:
         s = f.readlines()
-        print(len(s))
-        #print(s)
         for line in s:#文件中每一行代表一个人脸特征信息
-            #print(ubinascii.a2b_base64(line))
             record_ftrs.append(bytearray(ubinascii.a2b_base64(line)))
 
-print(record_ftr,names)#当前人脸196维特征
+print(record_ftrs,names)#当前人脸196维特征
 
-print(len(record_ftr))
+print(len(record_ftrs))
 print("end")
 
 task_fd = kpu.load(0x300000) # 从flash 0x200000 加载人脸检测模型
@@ -117,18 +138,25 @@ img_lcd=image.Image() # 设置显示buf
 img_face=image.Image(size=(128,128)) #设置 128 * 128 人脸图片buf
 a=img_face.pix_to_ai() # 将图片转为kpu接受的格式
 
+times = 0 #记录识别人脸的次数，用于延迟识别反馈效果
+
 while(1): # 主循环
     check = 0
     save = 0
     tim.start()  #定时器中断开始
     img = sensor.snapshot() #从摄像头获取一张图片
+
+    lcd.display(img)
     clock.tick() #记录时刻，用于计算帧率
     code = kpu.run_yolo2(task_fd, img) # 运行人脸检测模型，获取人脸坐标位置
     #b = img.draw_string(0,0, ("tem"), color=(0,255,0),scale=2)
-
-
-
+    #避免识别过于频繁
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
+    utime.sleep_ms(500)
     if code: # 如果检测到人脸
+        times = times + 1 #如果累计5次识别进行反馈，避免识别频繁
         for i in code: # 迭代坐标框
             # Cut face and resize to 128x128
             a = img.draw_rectangle(i.rect()) # 在屏幕显示人脸方框
@@ -170,31 +198,36 @@ while(1): # 主循环
                 if max_score < scores[k]:
                     max_score = scores[k]
                     index = k
-            if max_score > 80: # 如果最大分数大于85， 可以被认定为数据库存在这个人,且跟index指向的为同一个人
+            if max_score > 60: # 如果最大分数大于80， 可以被认定为数据库存在这个人,且跟index指向的为同一个人
                 a = img.draw_string(i.x(),i.y(), ("%s :%2.1f" % (names[index], max_score)), color=(0,255,0),scale=2) # 显示人名 与 分数
-                #说明识别成功，于是指示开锁
-                utime.sleep_ms(500)
-                print(Face_Rec_true.value(1))#识别成功,发送GPIO0高电平信号
-                utime.sleep_ms(500)
-                print(Face_Rec_true.value(0))#将引脚重置为低电平,否则下次不触发
+                if check == 0:#如果没有按键，认为是一般情况：人脸识别，且识别成功
+
+                    face_rec_success() #说明识别成功，于是指示开锁
+                else:
+                    check = 0 #恢复一般状态
+                    if delete == 1: #如果要删除当前人脸信息
+                        delete = 0
+                        delete_feature(index)
+                        face_rec_fail()#给出反应，表示删除成功
+                break
             else:#否则表示不存在这个人
                 a = img.draw_string(i.x(),i.y(), ("X :%2.1f" % (max_score)), color=(255,0,0),scale=2) #显示未知 与 分数
                 if check ==1: #如果检测到串口数据
-                   check = 0
-                   record_ftr = feature
-                   record_ftrs.append(record_ftr) #将当前特征添加到已知特征列表
-                   if save== 1:  #如果存储
-                      save = 0
-                      a = img.draw_string(100,100, "Store successful", color=(0,255,0),scale=2)
-                      print("store successful")
-                      save_feature(record_ftr) #存到SD卡
-                   break
-                else :#如果没有按键，认为是一般情况:识别人脸
-                   utime.sleep_ms(500)
-                   print(Face_Rec_false.value(1))#识别失败,发送GPIO1高电平信号
-                   utime.sleep_ms(500)
-                   print(Face_Rec_false.value(0))#将引脚重置为低电平,否则下次不触发
+                    check = 0
+                    record_ftr = feature
+                    if save== 1:  #如果存储
+                        save = 0
+                        a = img.draw_string(100,100, "Store successful", color=(0,255,0),scale=2)
+                        print("store successful")
+                        save_feature(record_ftr) #存到SD卡
+                        record_ftrs.append(record_ftr) #将当前特征添加到已知特征列表
+                        face_rec_success()#存储人脸，允许开门
+                    break
+                else :#如果没有按键，认为是一般情况:识别人脸,且识别失败
+                    face_rec_fail()
+
     a = img.draw_string(0,220,"face", color=(255,0,0),scale=2) #显示未知 与 分数
     a = lcd.display(img) #刷屏显示
+
 
 

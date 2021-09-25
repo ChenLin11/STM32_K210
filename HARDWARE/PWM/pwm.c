@@ -62,48 +62,7 @@ void TIM13_PWM_Init(u32 arr,u32 psc)
 										  
 }  
 
-//void TIM4_PWM_Init(uint16_t arr,uint16_t psc)
-//{  
-//        GPIO_InitTypeDef GPIO_InitStructure;
-//        TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-//        TIM_OCInitTypeDef  TIM_OCInitStructure;
-//        
-//        RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-//        RCC_APB2PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-//        
-//        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6| GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9; //TIM4_CH1 | TIM4_CH2 | TIM4_CH3 | TIM4_CH4
-//        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用推挽输出
-//        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;      //推挽复用输出
-//	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;        //上拉
-//        GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-//				//初始化TIM4时基
-//				//当定时器从0计数到arr，即为arr+1次，为一个定时周期
-//        TIM_TimeBaseStructure.TIM_Period = arr; //下一个更新事件装入活动的自动重装载寄存器周期的值
-//        TIM_TimeBaseStructure.TIM_Prescaler =psc; //作为Tim时钟频率除数的预分频值 
-//        TIM_TimeBaseStructure.TIM_ClockDivision = 0; // 时钟分频因子 ，配置死区时间时需要用到
-//        TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //向上计数
-//        TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);//时间基数单位
-//        
-//        //配置PWM模式 输出比较        
-//        TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; 
-//        TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; //比较输出使能
-//        TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low; //低电平触发 
-//        
-//        TIM_OC2Init(TIM4, &TIM_OCInitStructure); 
-//        TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);//使能TIM4在CCR2上的预装载寄存器
-//        
-//        TIM_OC3Init(TIM4, &TIM_OCInitStructure);
-//        TIM_OC3PreloadConfig(TIM4, TIM_OCPreload_Enable);
-//        
-//        TIM_OC4Init(TIM4, &TIM_OCInitStructure);
-//        TIM_OC4PreloadConfig(TIM4, TIM_OCPreload_Enable);
-
-//				TIM_OC1Init(TIM4, &TIM_OCInitStructure);
-//        TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
-//        TIM_Cmd(TIM4, ENABLE);
-//}
 
 void TIM4_PWM_Init(u32 arr,u32 psc)
 {		 					 

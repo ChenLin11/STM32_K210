@@ -72,14 +72,14 @@ u8 wav_decode_init(u8* fname,__wavctrl* wavx)
 					wavx->datasize=data->ChunkSize;			//数据块大小
 					wavx->datastart=wavx->datastart+8;		//数据流开始的地方. 
 					 
-					printf("wavx->audioformat:%d\r\n",wavx->audioformat);
-					printf("wavx->nchannels:%d\r\n",wavx->nchannels);
-					printf("wavx->samplerate:%d\r\n",wavx->samplerate);
-					printf("wavx->bitrate:%d\r\n",wavx->bitrate);
-					printf("wavx->blockalign:%d\r\n",wavx->blockalign);
-					printf("wavx->bps:%d\r\n",wavx->bps);
-					printf("wavx->datasize:%d\r\n",wavx->datasize);
-					printf("wavx->datastart:%d\r\n",wavx->datastart);  
+//					printf("wavx->audioformat:%d\r\n",wavx->audioformat);
+//					printf("wavx->nchannels:%d\r\n",wavx->nchannels);
+//					printf("wavx->samplerate:%d\r\n",wavx->samplerate);
+//					printf("wavx->bitrate:%d\r\n",wavx->bitrate);
+//					printf("wavx->blockalign:%d\r\n",wavx->blockalign);
+//					printf("wavx->bps:%d\r\n",wavx->bps);
+//					printf("wavx->datasize:%d\r\n",wavx->datasize);
+//					printf("wavx->datastart:%d\r\n",wavx->datastart);  
 				}else res=3;//data区域未找到.
 			}else res=2;//非wav文件
 			

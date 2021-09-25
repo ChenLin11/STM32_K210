@@ -13,6 +13,7 @@
 #include "string.h"  
 #include "usbh_usr.h" 
 #include "exti.h"
+#include "pwm.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK STM32F407开发板
@@ -42,7 +43,7 @@ u8 USH_User_App(void){//usb响应函数
 	u8 *pname;			//带路径的文件名
 	u16 totwavnum; 		//音乐文件总数
 	u16 *wavindextbl;	//音乐索引表
-	
+	u8 openDoor;		//是否打开门
 	WM8978_ADDA_Cfg(1,0);	//开启DAC
 	WM8978_Input_Cfg(0,0,0);//关闭输入通道
 	WM8978_Output_Cfg(1,0);	//开启DAC输出 
@@ -65,29 +66,43 @@ u8 USH_User_App(void){//usb响应函数
 	{	
 		if(FLAG_PlayMusic){//如果要播放音乐，说明识别有了个结果，发送中断
 			FLAG_PlayMusic = 0;
-			LCD_Fill(60,190,240,190+16,WHITE);				//清除之前的显示
-			
 			if(FLAG_Face_True){//认证成功
 				FLAG_Face_True = 0;
 				fn = (u8*)"ring.wav";
-				Show_Str(60,190,240-60,16,"识别成功",16,0);				//显示歌曲名字 
+				Show_Str(60,190,240-60,16,"识别成功",30,0);	
+				openDoor = 1;
+				
+				strcpy((char*)pname,"2:/MUSIC/");				//复制路径(目录)
+				strcat((char*)pname,(const char*)fn);  			//将文件名接在后面
+				audio_play_song(pname); 			 		//播放这个音频文件
 			}
-			else if(FLAG_Face_False){//认证识别
+			else if(FLAG_Face_False){//认证失败
 				FLAG_Face_False = 0;
 				fn = (u8*)"warning.wav";
-				Show_Str(60,190,240-60,16,"识别失败",16,0);				//显示歌曲名字 
+				Show_Str(60,190,240-60,16,"识别失败",30,0);	
+				openDoor = 0;
+				strcpy((char*)pname,"2:/MUSIC/");				//复制路径(目录)
+				strcat((char*)pname,(const char*)fn);  			//将文件名接在后面
+				audio_play_song(pname); 			 		//播放这个音频文件
+				audio_play_song(pname); 			 		//播放这个音频文件
+				audio_play_song(pname); 			 		//播放这个音频文件
+				audio_play_song(pname); 			 		//播放这个音频文件
 			}	
 		}
 		
-		strcpy((char*)pname,"2:/MUSIC/");				//复制路径(目录)
-		strcat((char*)pname,(const char*)fn);  			//将文件名接在后面
-
 		
-
-		
-		audio_play_song(pname); 			 		//播放这个音频文件
-		audio_play_song(pname); 
-		FLAG_PlayMusic = 0;
+		if(openDoor){//模拟开门
+			openDoor = 0;
+			TIM_SetCompare1(TIM3,180);//170-195的范围
+			delay_ms(1000);  
+			delay_ms(1000); 
+			delay_ms(1000);  
+			delay_ms(1000);		
+			delay_ms(1000);	
+			TIM_SetCompare1(TIM3,170);//170-195的范围
+			delay_ms(1000);	
+		}
+		LCD_Fill(60,190,240,190+16,WHITE);				//清除之前的显示
 	} 											  
 	myfree(SRAMIN,wavfileinfo.lfname);	//释放内存			    
 	myfree(SRAMIN,pname);				//释放内存			    
@@ -166,7 +181,6 @@ u8 audio_play_song(u8* fname)
 			res=wav_play_song(fname);
 			break;
 		default://其他文件,自动跳转到下一曲
-			//res=KEY0_PRES;
 			break;
 	}
 	return res;
